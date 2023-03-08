@@ -14,9 +14,9 @@ var (
 		Short: "A Command Line Interface to handle the cosine project",
 	}
 
-	cfgFile         string
-	phoneTrialPaths []string
-	viconTrialPath  string
+	cfgFile             string
+	phoneRecordingPaths []string
+	viconRecordingPath  string
 )
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -34,11 +34,11 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "",
 		"config file (default is $HOME/.cosine_cli.yaml)")
 
-	rootCmd.PersistentFlags().StringArrayVar(&phoneTrialPaths, "phone", nil,
-		"An array of the path to the phone trial directories")
+	rootCmd.PersistentFlags().StringArrayVar(&phoneRecordingPaths, "phone", nil,
+		"An array of the path to the phone recording directories")
 
-	rootCmd.PersistentFlags().StringVar(&viconTrialPath, "vicon", "",
-		"The path to the Vicon captured trials folder")
+	rootCmd.PersistentFlags().StringVar(&viconRecordingPath, "vicon", "",
+		"The path to the Vicon captured recording folder")
 
 	viper.BindPFlag("phone", rootCmd.Flags().Lookup("phone"))
 	viper.BindPFlag("vicon", rootCmd.Flags().Lookup("vicon"))

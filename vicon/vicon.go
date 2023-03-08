@@ -10,13 +10,13 @@ type Data struct {
 	Path string
 }
 
-func (d *Data) Parse() ([]*Trial, error) {
+func (d *Data) Parse() ([]*Recording, error) {
 	dirs, err := os.ReadDir(d.Path)
 	if err != nil {
 		return nil, err
 	}
 
-	trials := make([]*Trial, 0)
+	recordings := make([]*Recording, 0)
 
 	for _, dir := range dirs {
 		if dir.IsDir() {
@@ -26,18 +26,17 @@ func (d *Data) Parse() ([]*Trial, error) {
 			continue
 		}
 
-		trialPath := filepath.Join(d.Path, dir.Name())
-		trial, err := NewTrial(trialPath)
+		recordingPath := filepath.Join(d.Path, dir.Name())
+		recording, err := NewRecording(recordingPath)
 		if err != nil {
 			return nil, err
 		}
-		trials = append(trials, trial)
+		recordings = append(recordings, recording)
 	}
 
-	return trials, nil
+	return recordings, nil
 }
 
 func NewViconData(path string) (*Data, error) {
-
 	return &Data{Path: path}, nil
 }

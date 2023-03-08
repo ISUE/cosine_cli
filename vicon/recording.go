@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type (
@@ -70,19 +71,35 @@ var (
 	AllModalities = map[Modality]any{ModalityBody: nil, ModalityStick: nil}
 )
 
-// Trial
+// Recording
 // n10pl-1_1A_coordinated_step_user_32-1_2-28-23_output
 // A = Body
 // B = Stick
-type Trial struct {
+type Recording struct {
 	Cameras        Cameras
+	StartTime      time.Time
+	EndTime        time.Time
 	DeviceName     DeviceName
 	Action         Action
 	Modality       Modality
 	JostleStrength int
+	UserID         int
 }
 
-func NewTrial(xcpPath string) (*Trial, error) {
+func (t *Recording) String() string {
+	return fmt.Sprintf(
+		"{DeviceName=%s, Action=%s, Modality=%s, JostleStrength=%d, UserID=%d, StartTime=%s, EndTime=%s}",
+		t.DeviceName,
+		t.Action,
+		t.Modality,
+		t.JostleStrength,
+		t.UserID,
+		t.StartTime,
+		t.EndTime,
+	)
+}
+
+func NewRecording(xcpPath string) (*Recording, error) {
 	absPath, err := filepath.Abs(xcpPath)
 	if err != nil {
 		return nil, err
@@ -94,13 +111,22 @@ func NewTrial(xcpPath string) (*Trial, error) {
 	}
 	defer file.Close()
 
-	dec := xml.NewDecoder(file)
 	var cameras Cameras
-	if err = dec.Decode(&cameras); err != nil {
+	if err = xml.NewDecoder(file).Decode(&cameras); err != nil {
 		return nil, err
 	}
 
-	t := &Trial{Cameras: cameras}
+	startTime, err := ParseViconDataTime(cameras.Camera[0].Capture.STARTTIME)
+	if err != nil {
+		return nil, fmt.Errorf("unable to parse vicon start time in xcp file: %v", err)
+	}
+
+	endTime, err := ParseViconDataTime(cameras.Camera[0].Capture.ENDTIME)
+	if err != nil {
+		return nil, fmt.Errorf("unable to parse vicon end time in xcp file: %v", err)
+	}
+
+	t := &Recording{StartTime: startTime, EndTime: endTime}
 	if err != nil {
 		return nil, err
 
@@ -117,13 +143,15 @@ func NewTrial(xcpPath string) (*Trial, error) {
 
 // ScrapeFileName
 // n10pl-1_1A_coordinated_step_user_32-1_2-28-23_output.csv
-func (t *Trial) ScrapeFileName(csvFileName string) (err error) {
+func (t *Recording) ScrapeFileName(csvFileName string) (err error) {
 	parts := strings.Split(csvFileName, "_")
 	if t.DeviceName, err = GetDeviceName(parts[0]); err != nil {
 		return err
 	}
 
-	modalityCombo := parts[2]
+	modalityCombo := parts[1]
+
+	fmt.Printf("modalityCombo=%s\n", modalityCombo)
 
 	jostleStrength, err := strconv.ParseInt(string(modalityCombo[0]), 10, 64)
 	if err != nil {
@@ -142,6 +170,17 @@ func (t *Trial) ScrapeFileName(csvFileName string) (err error) {
 	if t.Action, err = GetAction(parts[2]); err != nil {
 		return err
 	}
+
+	userIdPart := parts[4]
+
+	// remove the -1 from the user id
+	userIdPartRemovedNum := userIdPart[0 : len(userIdPart)-2]
+	userId, err := strconv.ParseInt(userIdPartRemovedNum, 10, 64)
+	if err != nil {
+		return err
+	}
+
+	t.UserID = int(userId)
 
 	return nil
 }

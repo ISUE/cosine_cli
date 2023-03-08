@@ -1,6 +1,9 @@
 package vicon
 
-import "encoding/xml"
+import (
+	"encoding/xml"
+	"time"
+)
 
 type Cameras struct {
 	XMLName xml.Name `xml:"Cameras"`
@@ -69,4 +72,13 @@ type Cameras struct {
 			} `xml:"KeyFrame"`
 		} `xml:"KeyFrames"`
 	} `xml:"Camera"`
+}
+
+const VICON_TIME = "2006-01-02 15:04:05"
+
+// ParseViconDataTime
+// Example Time: 2023-02-28 15:52:45.126
+func ParseViconDataTime(timeString string) (time.Time, error) {
+	timeString = timeString[0 : len(timeString)-3]
+	return time.Parse(VICON_TIME, timeString)
 }
