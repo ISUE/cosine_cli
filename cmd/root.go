@@ -1,6 +1,3 @@
-/*
-Copyright © 2023 NAME HERE <EMAIL ADDRESS>
-*/
 package cmd
 
 import (
@@ -17,7 +14,9 @@ var (
 		Short: "A Command Line Interface to handle the cosine project",
 	}
 
-	cfgFile string
+	cfgFile         string
+	phoneTrialPaths []string
+	viconTrialPath  string
 )
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -35,14 +34,14 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "",
 		"config file (default is $HOME/.cosine_cli.yaml)")
 
-	rootCmd.Flags().StringArrayP("phone_trials", "p", nil,
+	rootCmd.PersistentFlags().StringArrayVar(&phoneTrialPaths, "phone", nil,
 		"An array of the path to the phone trial directories")
 
-	rootCmd.Flags().StringP("vicon_trials", "v", "",
-		"The path to the vicon captured trials folder")
+	rootCmd.PersistentFlags().StringVar(&viconTrialPath, "vicon", "",
+		"The path to the Vicon captured trials folder")
 
-	viper.BindPFlag("phone_trials", rootCmd.Flags().Lookup("phone_trials"))
-	viper.BindPFlag("vicon_trials", rootCmd.Flags().Lookup("vicon_trials"))
+	viper.BindPFlag("phone", rootCmd.Flags().Lookup("phone"))
+	viper.BindPFlag("vicon", rootCmd.Flags().Lookup("vicon"))
 }
 
 func initConfig() {
