@@ -150,8 +150,6 @@ func (t *Recording) ScrapeFileName(csvFileName string) (err error) {
 
 	modalityCombo := parts[1]
 
-	fmt.Printf("modalityCombo=%s\n", modalityCombo)
-
 	jostleStrength, err := strconv.ParseInt(string(modalityCombo[0]), 10, 64)
 	if err != nil {
 		return err

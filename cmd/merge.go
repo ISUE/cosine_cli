@@ -43,7 +43,7 @@ func ExecuteMergeCmd(cmd *cobra.Command, args []string) {
 		phoneRecordings = append(phoneRecordings, newRecordings...)
 	}
 
-	fmt.Printf("phoneRecordings=%v\n", phoneRecordings)
+	//fmt.Printf("phoneRecordings=%v\n", phoneRecordings)
 
 	data, err := vicon.NewViconData(viconRecordingPath)
 	cobra.CheckErr(err)
@@ -55,7 +55,7 @@ func ExecuteMergeCmd(cmd *cobra.Command, args []string) {
 		return viconRecordings[i].StartTime.Before(viconRecordings[j].StartTime)
 	})
 
-	fmt.Printf("viconRecordings=%v\n", viconRecordings)
+	//fmt.Printf("viconRecordings=%v\n", viconRecordings)
 
 	trials, err := trial.MatchRecordings(phoneRecordings, viconRecordings)
 	cobra.CheckErr(err)
