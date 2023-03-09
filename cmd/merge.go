@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"cosine_cli/phone"
+	"cosine_cli/trial"
 	"cosine_cli/vicon"
 	"fmt"
 	"github.com/spf13/cobra"
@@ -28,7 +29,18 @@ func ExecuteMergeCmd(cmd *cobra.Command, args []string) {
 	for _, phoneRecordingPath := range phoneRecordingPaths {
 		recordings, err := phone.GetRecordings(phoneRecordingPath)
 		cobra.CheckErr(err)
-		phoneRecordings = append(phoneRecordings, recordings...)
+
+		newRecordings := make([]*phone.Recording, 0)
+
+		for _, recording := range recordings {
+			if recording.EndTime.Sub(recording.StartTime).Seconds() < 60.0*4 {
+				fmt.Printf("Excluding %s due to length of recording being under 4 minutes\n", recording.AbsolutePath)
+				continue
+			}
+			newRecordings = append(newRecordings, recording)
+		}
+
+		phoneRecordings = append(phoneRecordings, newRecordings...)
 	}
 
 	fmt.Printf("phoneRecordings=%v\n", phoneRecordings)
@@ -36,14 +48,20 @@ func ExecuteMergeCmd(cmd *cobra.Command, args []string) {
 	data, err := vicon.NewViconData(viconRecordingPath)
 	cobra.CheckErr(err)
 
-	recordings, err := data.Parse()
+	viconRecordings, err := data.Parse()
 	cobra.CheckErr(err)
 
-	sort.SliceStable(recordings, func(i, j int) bool {
-		return recordings[i].StartTime.Before(recordings[j].StartTime)
+	sort.SliceStable(viconRecordings, func(i, j int) bool {
+		return viconRecordings[i].StartTime.Before(viconRecordings[j].StartTime)
 	})
 
-	fmt.Printf("recordings=%v\n", recordings)
+	fmt.Printf("viconRecordings=%v\n", viconRecordings)
+
+	trials, err := trial.MatchRecordings(phoneRecordings, viconRecordings)
+	cobra.CheckErr(err)
+
+	fmt.Printf("trials=%s\n", trials)
+	fmt.Printf("Trial count=%d\n", len(trials))
 
 }
 

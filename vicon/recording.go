@@ -76,7 +76,6 @@ var (
 // A = Body
 // B = Stick
 type Recording struct {
-	Cameras        Cameras
 	StartTime      time.Time
 	EndTime        time.Time
 	DeviceName     DeviceName
@@ -135,7 +134,7 @@ func NewRecording(xcpPath string) (*Recording, error) {
 	csvFileName := strings.Replace(filepath.Base(xcpPath), ".xcp", "_output.csv", 1)
 	err = t.ScrapeFileName(csvFileName)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unable to scrape file name %s: %v", csvFileName, err)
 	}
 
 	return t, nil
@@ -145,7 +144,7 @@ func NewRecording(xcpPath string) (*Recording, error) {
 // n10pl-1_1A_coordinated_step_user_32-1_2-28-23_output.csv
 func (t *Recording) ScrapeFileName(csvFileName string) (err error) {
 	parts := strings.Split(csvFileName, "_")
-	if t.DeviceName, err = GetDeviceName(parts[0]); err != nil {
+	if t.DeviceName, err = GetDeviceName(strings.Replace(parts[0], "-", "", 1)); err != nil {
 		return err
 	}
 
